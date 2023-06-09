@@ -1,0 +1,29 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.lucassouza.firebase.alarm.firebase_alarm_notification">
+  <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <application>
+    <service
+        android:name=".FirebaseAlarmMessagingService"
+        android:stopWithTask="false"
+        android:exported="false"
+        >
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+      </intent-filter>
+    </service>
+    <receiver android:name=".FirebaseAlarmActionNotificationBroadcastReceiver" android:exported="false">
+      <intent-filter>
+        <action android:name="com.firebase.actions.MARK_AS_DONE"/>
+      </intent-filter>
+    </receiver>
+    <provider
+        android:name=".FirebaseAlarmMessagingInitProvider"
+        android:authorities="${applicationId}.flutterfirebasemessaginginitprovider"
+        android:exported="false"
+        android:initOrder="99" />
+  </application>
+</manifest>
