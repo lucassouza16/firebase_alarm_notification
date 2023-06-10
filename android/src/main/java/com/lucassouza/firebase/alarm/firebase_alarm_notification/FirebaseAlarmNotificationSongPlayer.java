@@ -67,7 +67,7 @@ public class FirebaseAlarmNotificationSongPlayer {
       mediaPlayer.prepare();
       mediaPlayer.start();
     } catch (Exception e) {
-      Log.d("Teste", e.getMessage());
+      Log.e(TAG, e.getMessage());
     }
   }
 

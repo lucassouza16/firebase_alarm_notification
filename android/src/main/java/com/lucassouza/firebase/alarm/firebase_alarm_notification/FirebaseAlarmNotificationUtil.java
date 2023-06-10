@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-
 public class FirebaseAlarmNotificationUtil {
     public static final String INTENT_ACTION_TAP_NOTIFICATION = "firebase.alarm.action.tap_notification";
     public static final String INTENT_ACTION_DISMISS_NOTIFICATION = "firebase.alarm.action.dismiss_notification";

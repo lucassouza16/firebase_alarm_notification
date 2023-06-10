@@ -70,8 +70,8 @@ class FirebaseNotification {
 
 class FirebaseMessage {
   String id;
-  FirebaseNotification? notification;
   Map data;
+  FirebaseNotification? notification;
 
   FirebaseMessage({
     required this.id,

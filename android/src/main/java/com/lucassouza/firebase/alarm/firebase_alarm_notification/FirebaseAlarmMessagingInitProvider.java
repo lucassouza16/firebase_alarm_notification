@@ -1,7 +1,3 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
 import android.content.ContentProvider;
@@ -38,24 +34,20 @@ public class FirebaseAlarmMessagingInitProvider extends ContentProvider {
       String sortOrder) {
     return null;
   }
-
   @Nullable
   @Override
   public String getType(@NonNull Uri uri) {
     return null;
   }
-
   @Nullable
   @Override
   public Uri insert(@NonNull Uri uri, ContentValues values) {
     return null;
   }
-
   @Override
   public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
     return 0;
   }
-
   @Override
   public int update(
       @NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {

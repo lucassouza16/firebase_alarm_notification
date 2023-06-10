@@ -8,14 +8,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.firebase.messaging.FirebaseMessaging;
-
 import java.util.Map;
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -42,7 +38,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     FlutterPluginBinding binding;
     private Context context;
     private Map<String, Object> initialMessage;
-    BroadcastReceiver updateUIReciver;
+    BroadcastReceiver updateReceiver;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -92,7 +88,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_NEW_NOTIFICATION);
-        updateUIReciver = new BroadcastReceiver() {
+        updateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent != null) {
@@ -108,7 +104,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
                 }
             }
         };
-        currentActivity.registerReceiver(updateUIReciver, filter);
+        currentActivity.registerReceiver(updateReceiver, filter);
     }
 
     @Override
@@ -162,6 +158,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         channel.setMethodCallHandler(null);
         Application application = currentActivity.getApplication();
         application.unregisterActivityLifecycleCallbacks(this);
+        currentActivity.unregisterReceiver(updateReceiver);
         currentActivity = null;
     }
 

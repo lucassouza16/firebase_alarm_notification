@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
-
 public class FirebaseAlarmActionNotificationBroadcastReceiver extends BroadcastReceiver {
     String TAG = this.getClass().getSimpleName();
     void handleTapNotification(Context context, Intent intent) {
