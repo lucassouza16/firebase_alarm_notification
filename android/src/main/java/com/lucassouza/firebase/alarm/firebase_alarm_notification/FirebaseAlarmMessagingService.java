@@ -1,6 +1,7 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,18 +10,22 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
     String TAG = FirebaseAlarmMessagingService.class.getSimpleName();
-    private int getCurrentAppIcon () {
+
+    private int getCurrentAppIcon() {
 
         PackageManager packageManager = this.getPackageManager();
         String packageName = this.getPackageName();
@@ -36,6 +41,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
         return icon;
     }
+
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
@@ -61,8 +67,9 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
         tapIntent.putExtra("message", message);
 
         boolean isShowNotification = false;
+        boolean isChannelEnabled = true;
 
-        if(jsonNotification != null) {
+        if (jsonNotification != null) {
             String title = "";
             String body = "";
             String tag = "";
@@ -78,6 +85,8 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 body = (String) notification.get("body");
                 tag = (String) notification.get("tag");
                 channel = (String) notification.get("channel");
+
+                isChannelEnabled = FirebaseAlarmNotificationUtil.checkIfNotificationChannelIsEnabled(context, channel);
 
                 if (notification.get("alarm") != null) {
                     alarm = (boolean) notification.get("alarm");
@@ -98,36 +107,36 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
             boolean isInForeground = FirebaseAlarmNotificationUtil.isAppForeground(context);
 
-            isShowNotification = foreground || !isInForeground;
+            isShowNotification = (foreground || !isInForeground) && isChannelEnabled;
 
-            if(isShowNotification){
-            PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            if (isShowNotification) {
+                PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            @SuppressLint("NotificationTrampoline")
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
-                    .setSmallIcon(getCurrentAppIcon())
-                    .setContentTitle(title)
-                    .setContentText(body)
-                    .setAutoCancel(true)
-                    .setContentIntent(onActionPendingIntent)
-                    .setDeleteIntent(onActionDismissIntent);
+                @SuppressLint("NotificationTrampoline")
+                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
+                        .setSmallIcon(getCurrentAppIcon())
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setAutoCancel(true)
+                        .setContentIntent(onActionPendingIntent)
+                        .setDeleteIntent(onActionDismissIntent);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                mBuilder.setChannelId(channel);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mBuilder.setChannelId(channel);
+                }
+
+                NotificationManager mNotificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotificationManager.notify(tag, 0, mBuilder.build());
+
+                if (alarm) {
+                    FirebaseAlarmNotificationSongPlayer.play(context);
+                }
             }
-
-            NotificationManager mNotificationManager =
-                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            mNotificationManager.notify(tag, 0, mBuilder.build());
-
-            if (alarm) {
-                FirebaseAlarmNotificationSongPlayer.play(context);
-            }
-          }
         }
 
-        if(!isShowNotification) {
+        if (!isShowNotification) {
             Intent newIntent = new Intent();
             newIntent.putExtras(tapIntent.getExtras());
             newIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_NEW_NOTIFICATION);
