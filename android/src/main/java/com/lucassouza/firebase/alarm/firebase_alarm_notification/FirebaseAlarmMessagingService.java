@@ -1,7 +1,6 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -78,8 +77,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
             boolean foreground = false;
 
             try {
-                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {
-                });
+                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {});
 
                 title = (String) notification.get("title");
                 body = (String) notification.get("body");
@@ -131,7 +129,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 mNotificationManager.notify(tag, 0, mBuilder.build());
 
                 if (alarm) {
-                    FirebaseAlarmNotificationSongPlayer.play(context);
+                    FirebaseAlarmNotificationAlarmService.play(context);
                 }
             }
         }

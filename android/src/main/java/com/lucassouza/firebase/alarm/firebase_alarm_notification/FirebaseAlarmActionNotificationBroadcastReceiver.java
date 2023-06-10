@@ -13,10 +13,10 @@ public class FirebaseAlarmActionNotificationBroadcastReceiver extends BroadcastR
         newIntent.putExtras(intent);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(newIntent);
-        FirebaseAlarmNotificationSongPlayer.stop();
+        FirebaseAlarmNotificationAlarmService.stop();
     }
     void handleDismissNotification(Context context, Intent intent) {
-        FirebaseAlarmNotificationSongPlayer.stop();
+        FirebaseAlarmNotificationAlarmService.stop();
     }
     @Override
     public void onReceive(Context context, Intent intent) {

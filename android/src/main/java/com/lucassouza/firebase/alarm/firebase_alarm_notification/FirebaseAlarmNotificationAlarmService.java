@@ -9,11 +9,10 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
 import java.io.File;
-public class FirebaseAlarmNotificationSongPlayer {
+public class FirebaseAlarmNotificationAlarmService {
   static MediaPlayer mediaPlayer;
   static Vibrator mVibrate;
-
-  private static String TAG = FirebaseAlarmNotificationSongPlayer.class.getSimpleName();
+  private static String TAG = FirebaseAlarmNotificationAlarmService.class.getSimpleName();
   public static void play(Context context) {
 
     File file = new File(context.getFilesDir(), FirebaseAlarmNotificationUtil.ALARM_SONG_NAME);
