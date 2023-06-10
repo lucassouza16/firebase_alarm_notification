@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -18,8 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
-
-    String TAG = this.getClass().getSimpleName();
+    String TAG = FirebaseAlarmMessagingService.class.getSimpleName();
     private int getCurrentAppIcon () {
 
         PackageManager packageManager = this.getPackageManager();
@@ -36,68 +36,102 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
         return icon;
     }
-
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        Intent actionIntent = new Intent(this, FirebaseAlarmActionNotificationBroadcastReceiver.class);
+        Context context = getApplicationContext();
+
+        Intent tapIntent = new Intent(this, FirebaseAlarmActionNotificationBroadcastReceiver.class);
         Intent dismissIntent = new Intent(this, FirebaseAlarmActionNotificationBroadcastReceiver.class);
 
-        actionIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_TAP_NOTIFICATION);
+        tapIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_TAP_NOTIFICATION);
         dismissIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_DISMISS_NOTIFICATION);
 
         Map<String, String> data = remoteMessage.getData();
+
         String jsonNotification = data.get("notification");
+        data.remove("notification");
+
+        HashMap<String, Object> message = new HashMap<>();
+
+        message.put("id", remoteMessage.getMessageId());
+        message.put("data", data);
+
+        tapIntent.putExtra("message", message);
+
+        boolean isShowNotification = false;
 
         if(jsonNotification != null) {
             String title = "";
             String body = "";
             String tag = "";
+            String channel = "";
             boolean alarm = false;
+            boolean foreground = false;
 
             try {
-                Map<String, Object> notif = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>(){});
+                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {
+                });
 
-                 title = (String) notif.get("title");
-                 body = (String) notif.get("body");
-                 tag = (String) notif.get("tag");
+                title = (String) notification.get("title");
+                body = (String) notification.get("body");
+                tag = (String) notification.get("tag");
+                channel = (String) notification.get("channel");
 
-                 if(notif.get("alarm") != null) {
-                    alarm = (boolean) notif.get("alarm");
+                if (notification.get("alarm") != null) {
+                    alarm = (boolean) notification.get("alarm");
                 } else {
-                     notif.put("alarm", alarm);
-                 }
+                    notification.put("alarm", false);
+                }
 
-                 data.remove("notification");
+                if (notification.get("foreground") != null) {
+                    foreground = (boolean) notification.get("foreground");
+                } else {
+                    notification.put("foreground", false);
+                }
 
-                 HashMap<String, Object> message = new HashMap<>();
-
-                 message.put("id", remoteMessage.getMessageId());
-                 message.put("notification", notif);
-                 message.put("data", data);
-
-                actionIntent.putExtra("message", message);
+                message.put("notification", notification);
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
             }
 
-            PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqID(), actionIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            boolean isInForeground = FirebaseAlarmNotificationUtil.isAppForeground(context);
+
+            isShowNotification = foreground || !isInForeground;
+
+            if(isShowNotification){
+            PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             @SuppressLint("NotificationTrampoline")
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "default_channel") // notification icon
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
                     .setSmallIcon(getCurrentAppIcon())
                     .setContentTitle(title)
                     .setContentText(body)
                     .setAutoCancel(true)
                     .setContentIntent(onActionPendingIntent)
                     .setDeleteIntent(onActionDismissIntent);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mBuilder.setChannelId(channel);
+            }
+
             NotificationManager mNotificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.notify(tag, 0, mBuilder.build());
 
-            FirebaseAlarmSongPlayer.play(getApplicationContext());
+            if (alarm) {
+                FirebaseAlarmNotificationSongPlayer.play(context);
+            }
+          }
+        }
+
+        if(!isShowNotification) {
+            Intent newIntent = new Intent();
+            newIntent.putExtras(tapIntent.getExtras());
+            newIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_NEW_NOTIFICATION);
+            context.sendBroadcast(newIntent);
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -9,24 +8,23 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
-
 import java.io.File;
-
-public class FirebaseAlarmSongPlayer {
-
+public class FirebaseAlarmNotificationSongPlayer {
   static MediaPlayer mediaPlayer;
   static Vibrator mVibrate;
-  private static String PREF_SONG_NAME = "SOM_BUZINA";
 
+  private static String TAG = FirebaseAlarmNotificationSongPlayer.class.getSimpleName();
   public static void play(Context context) {
 
-    File file = new File(context.getFilesDir(), getActualAlarm(context));
+    File file = new File(context.getFilesDir(), FirebaseAlarmNotificationUtil.ALARM_SONG_NAME);
 
     stop();
 
     if(!file.exists()){
        return;
     }
+
+    Log.d(TAG, "Alarm played");
 
     try {
       if (mVibrate == null) {
@@ -74,6 +72,7 @@ public class FirebaseAlarmSongPlayer {
   }
 
   public static void stop() {
+    Log.d(TAG, "Alarm stopped");
     try {
       if (mediaPlayer != null) {
         mediaPlayer.stop();
@@ -85,35 +84,6 @@ public class FirebaseAlarmSongPlayer {
         mVibrate.cancel();
       }
     } catch (Exception e) {
-    }
-  }
-
-  public static boolean setActualAlarm(Context context, String source) {
-    try {
-      SharedPreferences settings = context.getSharedPreferences(
-        PREF_SONG_NAME,
-        0
-      );
-      SharedPreferences.Editor editor = settings.edit();
-      editor.putString("song", source);
-
-      editor.apply();
-
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  public static String getActualAlarm(Context context) {
-    try {
-      SharedPreferences settings = context.getSharedPreferences(
-        PREF_SONG_NAME,
-        0
-      );
-      return settings.getString("song", null);
-    } catch (Exception e) {
-      return null;
     }
   }
 }

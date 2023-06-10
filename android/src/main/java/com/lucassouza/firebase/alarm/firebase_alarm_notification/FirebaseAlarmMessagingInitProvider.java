@@ -12,13 +12,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 public class FirebaseAlarmMessagingInitProvider extends ContentProvider {
   @Override
   public void attachInfo(Context context, ProviderInfo info) {
     super.attachInfo(context, info);
   }
-
   @Override
   public boolean onCreate() {
     if (ContextHolder.getApplicationContext() == null) {
@@ -30,7 +28,6 @@ public class FirebaseAlarmMessagingInitProvider extends ContentProvider {
     }
     return false;
   }
-
   @Nullable
   @Override
   public Cursor query(

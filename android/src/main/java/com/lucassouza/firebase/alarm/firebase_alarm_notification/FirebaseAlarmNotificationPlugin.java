@@ -1,28 +1,21 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
-import androidx.annotation.NonNull;
 import android.app.Activity;
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.net.Uri;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 
-import io.flutter.FlutterInjector;
-import io.flutter.embedding.engine.loader.FlutterLoader;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -31,141 +24,199 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.NewIntentListener;
-import io.flutter.view.FlutterMain;
 
-/** FirebaseAlarmNotificationPlugin */
+/**
+ * FirebaseAlarmNotificationPlugin
+ */
 public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         implements
         MethodCallHandler,
         NewIntentListener,
         FlutterPlugin,
-        ActivityAware {
-  private String TAG = this.getClass().getSimpleName();
-  private MethodChannel channel;
-  private Activity mainActivity;
+        ActivityAware,
+        Application.ActivityLifecycleCallbacks {
+    private String TAG = this.getClass().getSimpleName();
+    private MethodChannel channel;
+    private Activity currentActivity;
 
-  FlutterPluginBinding binding;
-  private Context context;
-  private Map<String, Object> initialMessage;
+    FlutterPluginBinding binding;
+    private Context context;
+    private Map<String, Object> initialMessage;
+    BroadcastReceiver updateUIReciver;
 
-  @Override
-  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "firebase_alarm_notification");
-    channel.setMethodCallHandler(this);
-    binding = flutterPluginBinding;
-    context = flutterPluginBinding.getApplicationContext();
-    FirebaseAlarmSongPlayer.stop();
-  }
-
-  @Override
-  public boolean onNewIntent(@NonNull Intent intent) {
-    Log.d(TAG, "onNewIntent: Updated");
-
-    Bundle extras = intent.getExtras();
-
-    if(extras != null) {
-      Map<String, Object> message = (Map<String, Object>) extras.get("message");
-
-      channel.invokeMethod("onNotificationTapped", message);
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "firebase_alarm_notification");
+        channel.setMethodCallHandler(this);
+        binding = flutterPluginBinding;
+        context = flutterPluginBinding.getApplicationContext();
     }
 
-    mainActivity.setIntent(intent);
-    return true;
-  }
+    @Override
+    public boolean onNewIntent(@NonNull Intent intent) {
+        Log.d(TAG, "onNewIntent: Updated");
 
-  @Override
-  public void onAttachedToActivity(ActivityPluginBinding binding) {
-    Log.d(TAG, "onAttachedToActivity: Updated");
-    binding.addOnNewIntentListener(this);
-    this.mainActivity = binding.getActivity();
+        Bundle extras = intent.getExtras();
 
-    Intent initialIntent = this.mainActivity.getIntent();
+        if (extras != null) {
+            Map<String, Object> message = (Map<String, Object>) extras.get("message");
 
-    if(initialIntent != null) {
-      Map<String, Object> message = (Map<String, Object>) initialIntent.getExtras().get("message");
-
-      if(message != null) {
-          initialMessage = message;
-      }
-    }
-  }
-
-  public static Uri saveBytesToFile(Context context, byte[] bytes, String fileName) {
-    FileOutputStream fos = null;
-    File file = null;
-    Uri uri = null;
-
-    try {
-      file = new File(context.getFilesDir(), fileName);
-      fos = new FileOutputStream(file);
-      fos.write(bytes);
-
-      uri = Uri.fromFile(file);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (fos != null) {
-          fos.close();
+            if(message != null) {
+                channel.invokeMethod("onNotificationTapped", message);
+            }
         }
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+
+        currentActivity.setIntent(intent);
+        return true;
     }
 
-    return uri;
-  }
+    @Override
+    public void onAttachedToActivity(ActivityPluginBinding binding) {
+        Log.d(TAG, "onAttachedToActivity: Updated");
 
+        this.currentActivity = binding.getActivity();
+        Application application = currentActivity.getApplication();
 
+        binding.addOnNewIntentListener(this);
+        application.registerActivityLifecycleCallbacks(this);
 
-  @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    switch (call.method) {
-      case "getToken":
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(t -> {
-                  result.success(t.getResult());
-                });
-        break;
-      case "getInitialMessage":
-        result.success(initialMessage);
-        break;
-      case "setSongAssetAlarm":
+        Intent initialIntent = this.currentActivity.getIntent();
 
-        Map<String, Object> params = call.arguments();
+        if (initialIntent != null) {
+            Map<String, Object> message = (Map<String, Object>) initialIntent.getExtras().get("message");
 
-        String fileName = FirebaseAlarmNotificationUtil.getFileName((String) params.get("name"));
-        FirebaseAlarmSongPlayer.setActualAlarm(context, fileName);
-        FirebaseAlarmNotificationUtil.saveBytesToFile(context, (byte[]) params.get("bytes"), fileName);
-        result.success("inputStream.toString()");
-        break;
-      default:
-        result.notImplemented();
+            if (message != null) {
+                initialMessage = message;
+            }
+        }
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_NEW_NOTIFICATION);
+        updateUIReciver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent != null) {
+                    Bundle extras = intent.getExtras();
+
+                    if (extras != null) {
+                        Map<String, Object> message = (Map<String, Object>) extras.get("message");
+
+                        if(message != null) {
+                            channel.invokeMethod("onNotification", message);
+                        }
+                    }
+                }
+            }
+        };
+        currentActivity.registerReceiver(updateUIReciver, filter);
     }
-  }
 
-  @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    channel.setMethodCallHandler(null);
-  }
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
 
-  @Override
-  public void onDetachedFromActivityForConfigChanges() {
+        String method = call.method;
 
-  }
+        if (method.equals("getToken")) {
+            FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(t -> {
+                        result.success(t.getResult());
+                    });
+        } else if (method.equals("getInitialMessage")) {
+            result.success(initialMessage);
+        } else if (method.equals("setSongAssetAlarm")) {
+            Map<String, Object> arguments = call.arguments();
+            if (arguments == null) {
+                FirebaseAlarmNotificationUtil.removeAlarm(context);
+            } else {
+                byte[] fileBytes = (byte[]) arguments.get("bytes");
+                String fileAsset = (String) arguments.get("name");
 
-  @Override
-  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding activityPluginBinding) {
+                FirebaseAlarmNotificationUtil.saveAlarm(context, fileBytes, fileAsset);
+            }
+            result.success(true);
+        } else if (method.equals("getSongAssetAlarm")) {
+            result.success(FirebaseAlarmNotificationUtil.getSongAssetAlarm(context));
+        } else if (method.equals("createChannel")) {
+            Map<String, Object> arguments = call.arguments();
 
-  }
+            String id = (String) arguments.get("id");
+            String name = (String) arguments.get("name");
+            String description = (String) arguments.get("description");
+            int importance = (int) arguments.get("importance");
 
-  @Override
-  public void onDetachedFromActivity() {
+            FirebaseAlarmNotificationUtil.createNotificationChannel(context, id, name, description, importance);
+            result.success(true);
+        } else if (method.equals("channelExists")) {
+            String arguments = call.arguments();
+            result.success(FirebaseAlarmNotificationUtil.checkIfNotificationChannelExists(context, arguments));
+        } else if(method.equals("deleteChannel")){
+            String arguments = call.arguments();
+            result.success(FirebaseAlarmNotificationUtil.deleteNotificationChannel(context, arguments));
+        } else {
+            result.notImplemented();
+        }
+    }
 
-  }
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
+        Application application = currentActivity.getApplication();
+        application.unregisterActivityLifecycleCallbacks(this);
+        currentActivity = null;
+    }
 
-  @Override
-  public void onReceive(Context context, Intent intent) {
+    @Override
+    public void onDetachedFromActivityForConfigChanges() {
 
-  }
+    }
+
+    @Override
+    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding activityPluginBinding) {
+
+    }
+
+    @Override
+    public void onDetachedFromActivity() {
+
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+
+    }
+
+    @Override
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onActivityStarted(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(@NonNull Activity activity) {
+        FirebaseAlarmNotificationSongPlayer.stop();
+    }
+
+    @Override
+    public void onActivityPaused(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle bundle) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(@NonNull Activity activity) {
+
+    }
 }
