@@ -8,14 +8,32 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
+
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.dao.AlarmDAO;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.models.Alarm;
+
 import java.io.File;
 public class FirebaseAlarmNotificationAlarmService {
-  static MediaPlayer mediaPlayer;
-  static Vibrator mVibrate;
+  private static MediaPlayer mediaPlayer;
+  private static Vibrator mVibrate;
   private static String TAG = FirebaseAlarmNotificationAlarmService.class.getSimpleName();
-  public static void play(Context context) {
 
-    File file = new File(context.getFilesDir(), FirebaseAlarmNotificationUtil.ALARM_SONG_NAME);
+  private static AlarmDAO alarmDAO;
+  public static void play(Context context, String alarmId) {
+
+    if(alarmDAO == null) {
+      alarmDAO = new AlarmDAO(context);
+    }
+
+    Alarm alarm = alarmDAO.list().find(a -> a.getId().equals(alarmId));
+
+    if(alarm == null) {
+       alarm = alarmDAO.list().find(a -> a.isPrimary());
+    }
+
+    if(alarm == null) return;
+
+    File file = new File(alarm.getFile());
 
     stop();
 
@@ -59,7 +77,7 @@ public class FirebaseAlarmNotificationAlarmService {
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
 
-        mediaPlayer.setDataSource(context, Uri.parse("file://" + file.getAbsolutePath()));
+        mediaPlayer.setDataSource(context, Uri.fromFile(file));
         mediaPlayer.setLooping(true);
       }
 

@@ -10,7 +10,10 @@ import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.firebase.messaging.FirebaseMessaging;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
 import java.util.Map;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -34,11 +37,12 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     private String TAG = this.getClass().getSimpleName();
     private MethodChannel channel;
     private Activity currentActivity;
-
     FlutterPluginBinding binding;
     private Context context;
     private Map<String, Object> initialMessage;
-    BroadcastReceiver updateReceiver;
+    private BroadcastReceiver updateReceiver;
+
+    private FirebaseAlarmNotificationPluginMethods methods;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -46,6 +50,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         channel.setMethodCallHandler(this);
         binding = flutterPluginBinding;
         context = flutterPluginBinding.getApplicationContext();
+        methods = new FirebaseAlarmNotificationPluginMethods(context);
     }
 
     @Override
@@ -57,7 +62,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         if (extras != null) {
             Map<String, Object> message = (Map<String, Object>) extras.get("message");
 
-            if(message != null) {
+            if (message != null) {
                 channel.invokeMethod("onNotificationTapped", message);
             }
         }
@@ -87,7 +92,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         }
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_NEW_NOTIFICATION);
+        filter.addAction(Constants.INTENT_ACTION_NEW_NOTIFICATION);
         updateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -97,7 +102,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
                     if (extras != null) {
                         Map<String, Object> message = (Map<String, Object>) extras.get("message");
 
-                        if(message != null) {
+                        if (message != null) {
                             channel.invokeMethod("onNotification", message);
                         }
                     }
@@ -112,44 +117,36 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
 
         String method = call.method;
 
-        if (method.equals("getToken")) {
-            FirebaseMessaging.getInstance().getToken()
-                    .addOnCompleteListener(t -> {
-                        result.success(t.getResult());
-                    });
-        } else if (method.equals("getInitialMessage")) {
-            result.success(initialMessage);
-        } else if (method.equals("setSongAssetAlarm")) {
-            Map<String, Object> arguments = call.arguments();
-            if (arguments == null) {
-                FirebaseAlarmNotificationUtil.removeAlarm(context);
-            } else {
-                byte[] fileBytes = (byte[]) arguments.get("bytes");
-                String fileAsset = (String) arguments.get("name");
-
-                FirebaseAlarmNotificationUtil.saveAlarm(context, fileBytes, fileAsset);
-            }
-            result.success(true);
-        } else if (method.equals("getSongAssetAlarm")) {
-            result.success(FirebaseAlarmNotificationUtil.getSongAssetAlarm(context));
-        } else if (method.equals("createChannel")) {
-            Map<String, Object> arguments = call.arguments();
-
-            String id = (String) arguments.get("id");
-            String name = (String) arguments.get("name");
-            String description = (String) arguments.get("description");
-            int importance = (int) arguments.get("importance");
-
-            FirebaseAlarmNotificationUtil.createNotificationChannel(context, id, name, description, importance);
-            result.success(true);
-        } else if (method.equals("channelExists")) {
-            String arguments = call.arguments();
-            result.success(FirebaseAlarmNotificationUtil.checkIfNotificationChannelExists(context, arguments));
-        } else if(method.equals("deleteChannel")){
-            String arguments = call.arguments();
-            result.success(FirebaseAlarmNotificationUtil.deleteNotificationChannel(context, arguments));
-        } else {
-            result.notImplemented();
+        switch (method) {
+            case "getToken":
+                methods.getToken().addOnCompleteListener(task -> result.success(task.getResult()));
+                break;
+            case "getInitialMessage":
+                result.success(initialMessage);
+                break;
+            case "addAlarm":
+                result.success(methods.addAlarm(call.arguments()));
+                break;
+            case "listAlarms":
+                result.success(methods.listAlarms());
+                break;
+            case "removeAlarm":
+                result.success(methods.removeAlarm(call.arguments()));
+                break;
+            case "setAlarmList":
+                result.success(methods.saveAlarmList(call.arguments()));
+                break;
+            case "createChannel":
+                result.success(methods.createChannel(call.arguments()));
+                break;
+            case "channelExists":
+                result.success(methods.channelExists(call.arguments()));
+                break;
+            case "deleteChannel":
+                result.success(methods.deleteChannel(call.arguments()));
+                break;
+            default:
+                result.notImplemented();
         }
     }
 

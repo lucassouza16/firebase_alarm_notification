@@ -1,3 +1,77 @@
+// ignore_for_file: constant_identifier_names
+
+import 'package:flutter/services.dart';
+
+abstract class FirebaseAlarm {
+  final String uri;
+  final bool primary;
+  final String id;
+  final String title;
+  List<int>? bytes;
+
+  FirebaseAlarm({
+    required this.id,
+    required this.title,
+    required this.uri,
+    this.primary = false,
+    this.bytes = const [],
+  });
+
+  Future<List<int>> loadBytes() async {
+    throw UnimplementedError("Not Implemented");
+  }
+
+  factory FirebaseAlarm.fromJson(dynamic json) {
+    throw UnimplementedError("Not Implemented");
+  }
+
+  dynamic toJson() {
+    throw UnimplementedError("Not Implemented");
+  }
+
+  static List<FirebaseAlarmAsset> fromJsonList(List<dynamic> list) {
+    return list.map((e) => FirebaseAlarmAsset.fromJson(e)).toList();
+  }
+}
+
+class FirebaseAlarmAsset extends FirebaseAlarm {
+  FirebaseAlarmAsset({
+    required super.id,
+    required super.title,
+    required super.uri,
+    super.primary = false,
+    super.bytes,
+  });
+
+  @override
+  Future<List<int>> loadBytes() async {
+    ByteData fileData = await rootBundle.load(uri);
+    List<int> bytes = fileData.buffer.asUint8List();
+
+    super.bytes = bytes;
+
+    return bytes;
+  }
+
+  @override
+  factory FirebaseAlarmAsset.fromJson(dynamic json) => FirebaseAlarmAsset(
+        id: json['id'],
+        title: json['title'],
+        uri: json['uri'],
+        primary: json['primary'],
+        bytes: json['bytes'],
+      );
+
+  @override
+  dynamic toJson() => {
+        'id': id,
+        'title': title,
+        'uri': uri,
+        'primary': primary,
+        'bytes': bytes,
+      };
+}
+
 class FirebaseChannel {
   String id;
   String name;
@@ -32,12 +106,12 @@ class FirebaseChannel {
     );
   }
 
-  dynamic toDynamic() {
+  dynamic toJson() {
     return {
-      'id': this.id,
-      'name': this.name,
-      'description': this.description,
-      'importance': this.importance,
+      'id': id,
+      'name': name,
+      'description': description,
+      'importance': importance,
     };
   }
 }
@@ -47,7 +121,7 @@ class FirebaseNotification {
   final String? title;
   final String? body;
   final String? channel;
-  final bool alarm;
+  final String? alarm;
 
   const FirebaseNotification({
     required this.tag,

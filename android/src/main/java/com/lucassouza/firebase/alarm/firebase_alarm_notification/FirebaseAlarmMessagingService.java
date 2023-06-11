@@ -17,6 +17,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.AppUtil;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.SharedPreferencesUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,8 +52,8 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
         Intent tapIntent = new Intent(this, FirebaseAlarmActionNotificationBroadcastReceiver.class);
         Intent dismissIntent = new Intent(this, FirebaseAlarmActionNotificationBroadcastReceiver.class);
 
-        tapIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_TAP_NOTIFICATION);
-        dismissIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_DISMISS_NOTIFICATION);
+        tapIntent.setAction(Constants.INTENT_ACTION_TAP_NOTIFICATION);
+        dismissIntent.setAction(Constants.INTENT_ACTION_DISMISS_NOTIFICATION);
 
         Map<String, String> data = remoteMessage.getData();
 
@@ -65,16 +67,19 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
         tapIntent.putExtra("message", message);
 
+        tapIntent.putExtra("withAlarm", false);
+
         boolean isShowNotification = false;
         boolean isChannelEnabled = true;
 
         if (jsonNotification != null) {
-            String title = "";
-            String body = "";
-            String tag = "";
-            String channel = "";
-            boolean alarm = false;
+            String title = null;
+            String body = null;
+            String tag = null;
+            String channel = null;
+            String alarm = null;
             boolean foreground = false;
+            boolean hasAlarm = false;
 
             try {
                 Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {});
@@ -84,13 +89,14 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 tag = (String) notification.get("tag");
                 channel = (String) notification.get("channel");
 
-                isChannelEnabled = FirebaseAlarmNotificationUtil.checkIfNotificationChannelIsEnabled(context, channel);
-
-                if (notification.get("alarm") != null) {
-                    alarm = (boolean) notification.get("alarm");
-                } else {
-                    notification.put("alarm", false);
+                if(notification.get("alarm") instanceof String) {
+                    alarm = (String) notification.get("alarm");
+                    hasAlarm = true;
+                } else if(notification.get("alarm") instanceof Boolean) {
+                    hasAlarm = true;
                 }
+
+                isChannelEnabled = SharedPreferencesUtil.checkIfNotificationChannelIsEnabled(context, channel);
 
                 if (notification.get("foreground") != null) {
                     foreground = (boolean) notification.get("foreground");
@@ -103,13 +109,21 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 Log.e(TAG, e.getMessage());
             }
 
-            boolean isInForeground = FirebaseAlarmNotificationUtil.isAppForeground(context);
+            boolean isInForeground = AppUtil.isAppForeground(context);
 
             isShowNotification = (foreground || !isInForeground) && isChannelEnabled;
 
+            Log.d(TAG, isShowNotification+"");
+            Log.d(TAG, foreground+"");
+            Log.d(TAG, isInForeground+"");
+
             if (isShowNotification) {
-                PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), FirebaseAlarmNotificationUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                tapIntent.putExtra("withAlarm", hasAlarm);
+
+                dismissIntent.putExtras(tapIntent.getExtras());
+                PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
                 @SuppressLint("NotificationTrampoline")
                 NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
@@ -128,8 +142,8 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 mNotificationManager.notify(tag, 0, mBuilder.build());
 
-                if (alarm) {
-                    FirebaseAlarmNotificationAlarmService.play(context);
+                if (hasAlarm) {
+                    FirebaseAlarmNotificationAlarmService.play(context, alarm);
                 }
             }
         }
@@ -137,7 +151,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
         if (!isShowNotification) {
             Intent newIntent = new Intent();
             newIntent.putExtras(tapIntent.getExtras());
-            newIntent.setAction(FirebaseAlarmNotificationUtil.INTENT_ACTION_NEW_NOTIFICATION);
+            newIntent.setAction(Constants.INTENT_ACTION_NEW_NOTIFICATION);
             context.sendBroadcast(newIntent);
         }
     }
