@@ -109,7 +109,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 Log.e(TAG, e.getMessage());
             }
 
-            boolean isInForeground = AppUtil.isAppForeground(context);
+            boolean isInForeground = AppUtil.isAppForeground();
 
             isShowNotification = (foreground || !isInForeground) && isChannelEnabled;
 
