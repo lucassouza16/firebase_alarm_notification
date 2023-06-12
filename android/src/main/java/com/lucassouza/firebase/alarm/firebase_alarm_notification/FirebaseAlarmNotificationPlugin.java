@@ -38,12 +38,15 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     private Activity currentActivity;
     FlutterPluginBinding binding;
     private static Context context;
+    private boolean initialMessageLoaded = false;
     private Map<String, Object> initialMessage;
     private BroadcastReceiver updateReceiver;
     private FirebaseAlarmNotificationPluginMethods methods;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        Log.d(TAG, "onAttachToEngine: Updated");
+
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "firebase_alarm_notification");
         channel.setMethodCallHandler(this);
         binding = flutterPluginBinding;
@@ -56,13 +59,19 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         Log.d(TAG, "onNewIntent: Updated");
 
         Bundle extras = intent.getExtras();
+        Map<String, Object> message = null;
 
         if (extras != null) {
-            Map<String, Object> message = (Map<String, Object>) extras.get("message");
+            message = (Map<String, Object>) extras.get("message");
+        }
 
+        if (initialMessageLoaded) {
             if (message != null) {
                 channel.invokeMethod("onNotificationTapped", message);
             }
+        } else {
+            initialMessageLoaded = true;
+            initialMessage = message;
         }
 
         currentActivity.setIntent(intent);
@@ -83,15 +92,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         binding.addOnNewIntentListener(this);
         application.registerActivityLifecycleCallbacks(this);
 
-        Intent initialIntent = this.currentActivity.getIntent();
-
-        if (initialIntent != null) {
-            Map<String, Object> message = (Map<String, Object>) initialIntent.getExtras().get("message");
-
-            if (message != null) {
-                initialMessage = message;
-            }
-        }
+        onNewIntent(currentActivity.getIntent());
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.INTENT_ACTION_NEW_NOTIFICATION);
