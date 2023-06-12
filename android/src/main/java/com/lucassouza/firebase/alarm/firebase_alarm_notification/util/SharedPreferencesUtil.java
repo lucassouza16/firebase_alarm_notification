@@ -16,10 +16,6 @@ public class SharedPreferencesUtil {
         }
     }
 
-    public static String getSharedString(Context context, String key) {
-        return getSharedString(context, key, null);
-    }
-
     public static boolean removeSharedString(Context context, String key) {
         try {
             SharedPreferences settings = context.getSharedPreferences(
