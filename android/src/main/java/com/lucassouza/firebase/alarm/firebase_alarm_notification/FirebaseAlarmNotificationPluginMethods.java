@@ -1,6 +1,7 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
 import android.content.Context;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.tasks.Task;
@@ -9,12 +10,12 @@ import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.dao.Ala
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.models.Alarm;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.NotificationUtil;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.QueryList;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class FirebaseAlarmNotificationPluginMethods {
-
     private Context context;
     private AlarmDAO alarmDAO;
 
@@ -28,16 +29,17 @@ public class FirebaseAlarmNotificationPluginMethods {
     }
 
     public boolean addAlarm(HashMap<String, Object> arguments) {
-        return alarmDAO.addFromHash(arguments);
+        return alarmDAO.add(new ObjectMapper().convertValue(arguments, new TypeReference<Alarm>() {
+        }));
     }
 
     public List<HashMap<String, Object>> listAlarms() {
-        return new ObjectMapper().convertValue(alarmDAO.list(), new TypeReference<List<HashMap<String, Object>>>() {
+        return new ObjectMapper().convertValue(alarmDAO.getItems(), new TypeReference<List<HashMap<String, Object>>>() {
         });
     }
 
     public boolean removeAlarm(String arguments) {
-        Alarm alarm = alarmDAO.list().find(a -> a.getId().equals(arguments));
+        Alarm alarm = alarmDAO.getItems().find(a -> a.getId().equals(arguments));
 
         if (alarm != null) {
             alarmDAO.remove(alarm);
@@ -47,14 +49,10 @@ public class FirebaseAlarmNotificationPluginMethods {
     }
 
     public boolean saveAlarmList(List<HashMap<String, Object>> arguments) {
-        alarmDAO.removeAll();
-        QueryList<HashMap<String, Object>> args = new QueryList<>(arguments);
+        QueryList<Alarm> alarms = new ObjectMapper().convertValue(arguments, new TypeReference<QueryList<Alarm>>() {
+        });
 
-        if (args != null) {
-            args.foreach(a -> {
-                alarmDAO.addFromHash(a);
-            });
-        }
+        alarms.foreach(a -> alarmDAO.add(a));
 
         return true;
     }

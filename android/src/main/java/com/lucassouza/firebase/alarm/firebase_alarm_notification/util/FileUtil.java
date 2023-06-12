@@ -3,15 +3,16 @@ package com.lucassouza.firebase.alarm.firebase_alarm_notification.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 public class FileUtil {
-    public static String getExtensionFromNameFile (String nameFile) {
+    public static String getExtensionFromNameFile(String nameFile) {
         return nameFile.replaceAll("^.+\\.([a-zA-Z\\d]+)$", "$1");
     }
 
     public static boolean removeFile(String path) {
         File file = new File(path);
 
-        if(file.exists()) {
+        if (file.exists()) {
             file.delete();
         }
 
@@ -48,7 +49,7 @@ public class FileUtil {
         for (int i = 0; i < 30; i++) {
             String nChar = String.valueOf(chars.charAt((int) Math.round(Math.random() * (chars.length() - 1))));
 
-            name += Math.round(Math.random()*100)%2 == 0 ? nChar : nChar.toUpperCase();
+            name += Math.round(Math.random() * 100) % 2 == 0 ? nChar : nChar.toUpperCase();
         }
 
         return System.currentTimeMillis() + "_" + name;
@@ -57,9 +58,9 @@ public class FileUtil {
     public static File createNonExistsFile(File dir, String format) {
         File file;
 
-        do{
+        do {
             file = new File(dir, generateRandomName() + "." + format);
-        } while(file.exists());
+        } while (file.exists());
 
         return file;
     }

@@ -39,7 +39,7 @@ class FirebaseAlarmAsset extends FirebaseAlarm {
     required super.id,
     required super.title,
     required super.uri,
-    super.primary = false,
+    super.primary,
     super.bytes,
   });
 

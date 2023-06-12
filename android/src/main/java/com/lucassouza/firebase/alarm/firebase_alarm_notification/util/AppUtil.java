@@ -2,6 +2,7 @@ package com.lucassouza.firebase.alarm.firebase_alarm_notification.util;
 
 import android.app.ActivityManager;
 import android.os.SystemClock;
+
 public class AppUtil {
     public static int genUniqueID() {
         return ((int) SystemClock.uptimeMillis() % 99999999);

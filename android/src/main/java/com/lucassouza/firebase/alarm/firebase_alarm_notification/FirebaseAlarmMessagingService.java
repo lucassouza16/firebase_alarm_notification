@@ -82,17 +82,18 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
             boolean hasAlarm = false;
 
             try {
-                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {});
+                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {
+                });
 
                 title = (String) notification.get("title");
                 body = (String) notification.get("body");
                 tag = (String) notification.get("tag");
                 channel = (String) notification.get("channel");
 
-                if(notification.get("alarm") instanceof String) {
+                if (notification.get("alarm") instanceof String) {
                     alarm = (String) notification.get("alarm");
                     hasAlarm = true;
-                } else if(notification.get("alarm") instanceof Boolean) {
+                } else if (notification.get("alarm") instanceof Boolean) {
                     hasAlarm = true;
                 }
 
@@ -112,10 +113,6 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
             boolean isInForeground = AppUtil.isAppForeground();
 
             isShowNotification = (foreground || !isInForeground) && isChannelEnabled;
-
-            Log.d(TAG, isShowNotification+"");
-            Log.d(TAG, foreground+"");
-            Log.d(TAG, isInForeground+"");
 
             if (isShowNotification) {
 

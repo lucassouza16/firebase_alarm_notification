@@ -8,13 +8,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-
 import java.util.Map;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -38,10 +37,9 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     private MethodChannel channel;
     private Activity currentActivity;
     FlutterPluginBinding binding;
-    private Context context;
+    private static Context context;
     private Map<String, Object> initialMessage;
     private BroadcastReceiver updateReceiver;
-
     private FirebaseAlarmNotificationPluginMethods methods;
 
     @Override
@@ -69,6 +67,10 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
 
         currentActivity.setIntent(intent);
         return true;
+    }
+
+    public static Context getApplicationContext() {
+        return context;
     }
 
     @Override
