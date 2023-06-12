@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.AppUtil;
-import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.SharedPreferencesUtil;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.NotificationUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,7 +101,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                     }
                 }
 
-                isChannelEnabled = SharedPreferencesUtil.checkIfNotificationChannelIsEnabled(context, channel);
+                isChannelEnabled = NotificationUtil.checkIfNotificationChannelIsEnabled(context, channel);
 
                 if (notification.get("foreground") != null) {
                     foreground = (boolean) notification.get("foreground");

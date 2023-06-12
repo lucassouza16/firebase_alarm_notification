@@ -32,4 +32,16 @@ public class NotificationUtil {
             notificationManager.createNotificationChannel(channel);
         }
     }
+
+    public static boolean checkIfNotificationChannelIsEnabled(Context context, String channel) {
+        NotificationManager mNotificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel nChannel = mNotificationManager.getNotificationChannel(channel);
+            return (nChannel != null && nChannel.getImportance() != NotificationManager.IMPORTANCE_NONE);
+        }
+
+        return true;
+    }
 }

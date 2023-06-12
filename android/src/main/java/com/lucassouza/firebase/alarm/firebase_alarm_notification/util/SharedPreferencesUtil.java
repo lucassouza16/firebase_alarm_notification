@@ -1,10 +1,7 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification.util;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 
 public class SharedPreferencesUtil {
     public static String getSharedString(Context context, String key, String defValue) {
@@ -55,17 +52,5 @@ public class SharedPreferencesUtil {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    public static boolean checkIfNotificationChannelIsEnabled(Context context, String channel) {
-        NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel nChannel = mNotificationManager.getNotificationChannel(channel);
-            return (nChannel != null && nChannel.getImportance() != NotificationManager.IMPORTANCE_NONE);
-        }
-
-        return true;
     }
 }
