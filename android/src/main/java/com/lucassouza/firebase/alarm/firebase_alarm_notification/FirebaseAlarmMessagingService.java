@@ -90,11 +90,15 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 tag = (String) notification.get("tag");
                 channel = (String) notification.get("channel");
 
-                if (notification.get("alarm") instanceof String) {
-                    alarm = (String) notification.get("alarm");
-                    hasAlarm = true;
-                } else if (notification.get("alarm") instanceof Boolean) {
-                    hasAlarm = true;
+                Object alarmParam = notification.get("alarm");
+
+                if (alarmParam != null) {
+                    if (alarmParam instanceof String) {
+                        alarm = (String) notification.get("alarm");
+                        hasAlarm = true;
+                    } else {
+                        hasAlarm = (boolean) notification.get("alarm");
+                    }
                 }
 
                 isChannelEnabled = SharedPreferencesUtil.checkIfNotificationChannelIsEnabled(context, channel);
@@ -140,7 +144,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 mNotificationManager.notify(tag, 0, mBuilder.build());
 
                 if (hasAlarm) {
-                    FirebaseAlarmNotificationAlarmService.play(context, alarm);
+                    FirebaseAlarmNotificationPlayerService.play(context, alarm);
                 }
             }
         }

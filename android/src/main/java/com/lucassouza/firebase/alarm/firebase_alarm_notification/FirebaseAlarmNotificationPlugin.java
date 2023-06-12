@@ -194,7 +194,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
 
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
-        FirebaseAlarmNotificationAlarmService.stop();
+        FirebaseAlarmNotificationPlayerService.stop();
     }
 
     @Override

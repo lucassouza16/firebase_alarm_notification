@@ -17,14 +17,14 @@ public class FirebaseAlarmActionNotificationBroadcastReceiver extends BroadcastR
         boolean dismissAlarm = intent.getBooleanExtra("withAlarm", false);
 
         if(dismissAlarm) {
-            FirebaseAlarmNotificationAlarmService.stop();
+            FirebaseAlarmNotificationPlayerService.stop();
         }
     }
     void handleDismissNotification(Context context, Intent intent) {
         boolean dismissAlarm = intent.getBooleanExtra("withAlarm", false);
 
         if(dismissAlarm) {
-            FirebaseAlarmNotificationAlarmService.stop();
+            FirebaseAlarmNotificationPlayerService.stop();
         }
     }
     @Override

@@ -8,14 +8,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
+
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.dao.AlarmDAO;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.models.Alarm;
+
 import java.io.File;
 
-public class FirebaseAlarmNotificationAlarmService {
+public class FirebaseAlarmNotificationPlayerService {
     private static MediaPlayer mediaPlayer;
     private static Vibrator mVibrate;
-    private static String TAG = FirebaseAlarmNotificationAlarmService.class.getSimpleName();
+    private static String TAG = FirebaseAlarmNotificationPlayerService.class.getSimpleName();
 
     private static AlarmDAO alarmDAO;
 
@@ -29,6 +31,10 @@ public class FirebaseAlarmNotificationAlarmService {
 
         if (alarm == null) {
             alarm = alarmDAO.getItems().find(a -> a.isPrimary());
+        }
+
+        if(alarm == null) {
+            alarm = alarmDAO.getItems().first();
         }
 
         if (alarm == null) return;
