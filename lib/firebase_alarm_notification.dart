@@ -1,18 +1,16 @@
 // import 'package:flutter/foundation.dart';
 import 'package:firebase_alarm_notification/models/firebasemessage.model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'dart:io' show Platform;
 
 class FirebaseAlarmNotification {
   static const _methodChannel = MethodChannel('firebase_alarm_notification');
-  static final List<Function(FirebaseMessage arguments)>
-      _callbackNotificationTap = [];
-  static final List<Function(FirebaseMessage arguments)> _callbackNotification =
-      [];
+  static final List<Function(FirebaseMessage arguments)> _callbackNotificationTap = [];
+  static final List<Function(FirebaseMessage arguments)> _callbackNotification = [];
 
-  static Future<T> invokeMethohWithDefaultValue<T>(
-      String method, dynamic arguments, T defaultValue) async {
-    T? retorno = await FirebaseAlarmNotification._methodChannel
-        .invokeMethod<T>(method, arguments);
+  static Future<T> invokeMethohWithDefaultValue<T>(String method, dynamic arguments, T defaultValue) async {
+    T? retorno = await FirebaseAlarmNotification._methodChannel.invokeMethod<T>(method, arguments);
 
     if (retorno == null) {
       return defaultValue;
@@ -21,19 +19,38 @@ class FirebaseAlarmNotification {
     }
   }
 
-  static Future<String?> getToken() {
-    return FirebaseAlarmNotification._methodChannel
-        .invokeMethod<String>('getToken');
+  static bool isPlatformCompatible() {
+    if (!kIsWeb && Platform.isAndroid) {
+      return true;
+    } else {
+      debugPrint("firebase_alarm_notification is compatible with Android platform only");
+      return false;
+    }
+  }
+
+  static Future<String?> getToken() async {
+    if (!isPlatformCompatible()) {
+      return null;
+    }
+
+    return await FirebaseAlarmNotification._methodChannel.invokeMethod<String>('getToken');
   }
 
   static Future<List<FirebaseAlarm>> listAlarms() async {
-    List<dynamic> alarms = await FirebaseAlarmNotification
-        .invokeMethohWithDefaultValue<List<dynamic>>('listAlarms', null, []);
+    if (!isPlatformCompatible()) {
+      return [];
+    }
+
+    List<dynamic> alarms = await FirebaseAlarmNotification.invokeMethohWithDefaultValue<List<dynamic>>('listAlarms', null, []);
 
     return FirebaseAlarm.fromJsonList(alarms);
   }
 
   static Future<bool> addAlarm(FirebaseAlarm? alarm) async {
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
     dynamic params;
 
     if (alarm != null) {
@@ -42,16 +59,22 @@ class FirebaseAlarmNotification {
       params = alarm.toJson();
     }
 
-    return FirebaseAlarmNotification.invokeMethohWithDefaultValue<bool>(
-        'addAlarm', params, false);
+    return FirebaseAlarmNotification.invokeMethohWithDefaultValue<bool>('addAlarm', params, false);
   }
 
   static Future<bool> removeAlarm(String id) async {
-    return FirebaseAlarmNotification.invokeMethohWithDefaultValue(
-        'removeAlarm', id, true);
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return FirebaseAlarmNotification.invokeMethohWithDefaultValue('removeAlarm', id, true);
   }
 
   static Future<bool> setAlarmList(List<FirebaseAlarm>? alarms) async {
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
     List<dynamic> param = [];
 
     if (alarms != null) {
@@ -62,28 +85,39 @@ class FirebaseAlarmNotification {
       }
     }
 
-    return FirebaseAlarmNotification.invokeMethohWithDefaultValue(
-        'setAlarmList', param, true);
+    return FirebaseAlarmNotification.invokeMethohWithDefaultValue('setAlarmList', param, true);
   }
 
   static Future<bool> channelExists(String channelId) async {
-    return FirebaseAlarmNotification.invokeMethohWithDefaultValue<bool>(
-        'channelExists', channelId, true);
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return FirebaseAlarmNotification.invokeMethohWithDefaultValue<bool>('channelExists', channelId, true);
   }
 
   static Future<bool> deleteChannel(String channelId) async {
-    return FirebaseAlarmNotification.invokeMethohWithDefaultValue(
-        'deleteChannel', channelId, true);
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return FirebaseAlarmNotification.invokeMethohWithDefaultValue('deleteChannel', channelId, true);
   }
 
   static Future<bool> createChannel(FirebaseChannel channel) async {
-    return FirebaseAlarmNotification.invokeMethohWithDefaultValue(
-        'createChannel', channel.toJson(), true);
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return FirebaseAlarmNotification.invokeMethohWithDefaultValue('createChannel', channel.toJson(), true);
   }
 
   static Future<FirebaseMessage?> getInitialMessage() async {
-    dynamic param = await FirebaseAlarmNotification._methodChannel
-        .invokeMethod<dynamic>('getInitialMessage');
+    if (!isPlatformCompatible()) {
+      return null;
+    }
+
+    dynamic param = await FirebaseAlarmNotification._methodChannel.invokeMethod<dynamic>('getInitialMessage');
 
     if (param != null) {
       return FirebaseMessage.fromJson(param);
@@ -93,10 +127,18 @@ class FirebaseAlarmNotification {
   }
 
   static onNotificationTap(Function(FirebaseMessage message) callback) {
+    if (!isPlatformCompatible()) {
+      return;
+    }
+
     _callbackNotificationTap.add(callback);
   }
 
   static onNotification(Function(FirebaseMessage message) callback) {
+    if (!isPlatformCompatible()) {
+      return;
+    }
+
     _callbackNotification.add(callback);
   }
 
@@ -118,6 +160,10 @@ class FirebaseAlarmNotification {
   }
 
   static init() {
+    if (!isPlatformCompatible()) {
+      return;
+    }
+
     _methodChannel.setMethodCallHandler(_nativeMethodCallHandler);
   }
 }
