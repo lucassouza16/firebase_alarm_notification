@@ -4,9 +4,9 @@ import 'package:flutter/cupertino.dart';
 
 class Test {
   void init() async {
-    FirebaseAlarmNotification.init();
+    var alarmInstance = FirebaseAlarmNotification.instance;
 
-    await FirebaseAlarmNotification.setAlarmList([
+    await FirebaseAlarmNotification.instance.setAlarmList([
       FirebaseAlarmAsset(
         id: "a1",
         title: 'Alarme 10',
@@ -21,18 +21,18 @@ class Test {
       ),
     ]);
 
-    await FirebaseAlarmNotification.removeAlarm("alarm_1");
+    await alarmInstance.removeAlarm("alarm_1");
 
-    (await FirebaseAlarmNotification.listAlarms()).forEach((element) {
+    (await alarmInstance.listAlarms()).forEach((element) {
       debugPrint(element.id);
     });
 
-    FirebaseAlarmNotification.channelExists('teste3').then((value) {
+    alarmInstance.channelExists('teste3').then((value) {
       if (value) {
         debugPrint("Canal ja existe");
       } else {
         debugPrint("Canal criado");
-        FirebaseAlarmNotification.createChannel(FirebaseChannel(
+        alarmInstance.createChannel(FirebaseChannel(
           id: 'teste3',
           name: 'Pedidos Recebidos',
           description: 'Pedidos Recebidos',
@@ -41,14 +41,13 @@ class Test {
       }
     });
 
-    FirebaseAlarmNotification.getToken().then((value) {
+    alarmInstance.getToken().then((value) {
       debugPrint(value);
     });
 
-    debugPrint(
-        (await FirebaseAlarmNotification.deleteChannel("teste3")).toString());
+    debugPrint((await alarmInstance.deleteChannel("teste3")).toString());
 
-    FirebaseAlarmNotification.getInitialMessage().then((message) {
+    alarmInstance.getInitialMessage().then((message) {
       if (message != null) {
         debugPrint("Notificação inicial");
         debugPrint(message.id);
@@ -57,14 +56,14 @@ class Test {
       }
     });
 
-    FirebaseAlarmNotification.onNotificationTap((message) {
+    alarmInstance.onNotificationTap((message) {
       debugPrint("Notificação aberta pelo usuário");
       debugPrint(message.id);
       debugPrint(message.notification!.title);
       debugPrint(message.notification!.body);
     });
 
-    FirebaseAlarmNotification.onNotification((message) {
+    alarmInstance.onNotification((message) {
       debugPrint("Nova notificação, não foi exibida, tratar nesse callback");
       debugPrint(message.id);
       debugPrint(message.notification!.title);
