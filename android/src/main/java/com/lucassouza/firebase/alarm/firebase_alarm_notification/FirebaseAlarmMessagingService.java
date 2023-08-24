@@ -77,9 +77,8 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
             String body = null;
             String tag = null;
             String channel = null;
-            String alarm = null;
             boolean foreground = false;
-            boolean hasAlarm = false;
+            boolean alarm = false;
 
             try {
                 Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {
@@ -90,18 +89,11 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 tag = (String) notification.get("tag");
                 channel = (String) notification.get("channel");
 
-                Object alarmParam = notification.get("alarm");
-
-                if (alarmParam != null) {
-                    if (alarmParam instanceof String) {
-                        alarm = (String) notification.get("alarm");
-                        hasAlarm = true;
-                    } else {
-                        hasAlarm = (boolean) notification.get("alarm");
-                    }
-                }
-
                 isChannelEnabled = NotificationUtil.checkIfNotificationChannelIsEnabled(context, channel);
+
+                if(notification.get("alarm") != null){
+                    alarm = (boolean) notification.get("alarm");
+                }
 
                 if (notification.get("foreground") != null) {
                     foreground = (boolean) notification.get("foreground");
@@ -120,7 +112,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
             if (isShowNotification) {
 
-                tapIntent.putExtra("withAlarm", hasAlarm);
+                tapIntent.putExtra("withAlarm", alarm);
 
                 dismissIntent.putExtras(tapIntent.getExtras());
                 PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -143,8 +135,8 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 mNotificationManager.notify(tag, 0, mBuilder.build());
 
-                if (hasAlarm) {
-                    FirebaseAlarmNotificationPlayerService.play(context, alarm);
+                if (alarm) {
+                    FirebaseAlarmNotificationPlayerService.play(context);
                 }
             }
         }

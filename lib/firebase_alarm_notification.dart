@@ -36,64 +36,31 @@ class FirebaseAlarmNotification {
     }
   }
 
+  Future<bool> setAlarm(String uri) async {
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    ByteData fileData = await rootBundle.load(uri);
+    List<int> bytes = fileData.buffer.asUint8List();
+
+    return invokeMethohWithDefaultValue<bool>('setAlarm', bytes, false);
+  }
+
+  Future<bool> removeAlarm() async {
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return invokeMethohWithDefaultValue('removeAlarm', null, true);
+  }
+
   Future<String?> getToken() async {
     if (!isPlatformCompatible()) {
       return null;
     }
 
     return await _methodChannel.invokeMethod<String>('getToken');
-  }
-
-  Future<List<FirebaseAlarm>> listAlarms() async {
-    if (!isPlatformCompatible()) {
-      return [];
-    }
-
-    List<dynamic> alarms = await invokeMethohWithDefaultValue<List<dynamic>>('listAlarms', null, []);
-
-    return FirebaseAlarm.fromJsonList(alarms);
-  }
-
-  Future<bool> addAlarm(FirebaseAlarm? alarm) async {
-    if (!isPlatformCompatible()) {
-      return false;
-    }
-
-    dynamic params;
-
-    if (alarm != null) {
-      await alarm.loadBytes();
-
-      params = alarm.toJson();
-    }
-
-    return invokeMethohWithDefaultValue<bool>('addAlarm', params, false);
-  }
-
-  Future<bool> removeAlarm(String id) async {
-    if (!isPlatformCompatible()) {
-      return false;
-    }
-
-    return invokeMethohWithDefaultValue('removeAlarm', id, true);
-  }
-
-  Future<bool> setAlarmList(List<FirebaseAlarm>? alarms) async {
-    if (!isPlatformCompatible()) {
-      return false;
-    }
-
-    List<dynamic> param = [];
-
-    if (alarms != null) {
-      for (var alarm in alarms) {
-        await alarm.loadBytes();
-
-        param.add(alarm.toJson());
-      }
-    }
-
-    return invokeMethohWithDefaultValue('setAlarmList', param, true);
   }
 
   Future<bool> channelExists(String channelId) async {

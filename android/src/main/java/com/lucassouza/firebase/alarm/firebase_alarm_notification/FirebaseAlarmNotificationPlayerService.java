@@ -9,8 +9,7 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
 
-import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.dao.AlarmDAO;
-import com.lucassouza.firebase.alarm.firebase_alarm_notification.storage.models.Alarm;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.AlarmUtil;
 
 import java.io.File;
 
@@ -19,33 +18,13 @@ public class FirebaseAlarmNotificationPlayerService {
     private static Vibrator mVibrate;
     private static String TAG = FirebaseAlarmNotificationPlayerService.class.getSimpleName();
 
-    private static AlarmDAO alarmDAO;
+    public static void play(Context context) {
 
-    public static void play(Context context, String alarmId) {
+        File file = AlarmUtil.getAlarm();
 
-        if (alarmDAO == null) {
-            alarmDAO = new AlarmDAO(context);
-        }
-
-        Alarm alarm = alarmDAO.getItems().find(a -> a.getId().equals(alarmId));
-
-        if (alarm == null) {
-            alarm = alarmDAO.getItems().find(a -> a.isPrimary());
-        }
-
-        if(alarm == null) {
-            alarm = alarmDAO.getItems().first();
-        }
-
-        if (alarm == null) return;
-
-        File file = alarm.getFile();
+        if(file == null) return;
 
         stop();
-
-        if (!file.exists()) {
-            return;
-        }
 
         Log.d(TAG, "Alarm played");
 
