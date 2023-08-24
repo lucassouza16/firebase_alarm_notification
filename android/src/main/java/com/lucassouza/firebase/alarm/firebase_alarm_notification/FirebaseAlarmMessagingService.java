@@ -91,7 +91,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
                 isChannelEnabled = NotificationUtil.checkIfNotificationChannelIsEnabled(context, channel);
 
-                if(notification.get("alarm") != null){
+                if (notification.get("alarm") != null) {
                     alarm = (boolean) notification.get("alarm");
                 }
 

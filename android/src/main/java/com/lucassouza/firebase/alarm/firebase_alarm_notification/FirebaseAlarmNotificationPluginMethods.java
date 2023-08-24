@@ -17,9 +17,9 @@ public class FirebaseAlarmNotificationPluginMethods {
         this.context = context;
     }
 
-    public boolean setAlarm(byte[] bytes) {
+    public boolean setAlarm(Context context, byte[] bytes, String name) {
         try {
-            AlarmUtil.saveAlarm(bytes);
+            AlarmUtil.saveAlarm(context, bytes, name);
 
             return true;
         } catch (IOException e) {
@@ -27,10 +27,14 @@ public class FirebaseAlarmNotificationPluginMethods {
         }
     }
 
-    public boolean removeAlarm() {
-        AlarmUtil.removeAlarm();
+    public boolean removeAlarm(Context context) {
+        AlarmUtil.removeAlarm(context);
 
         return true;
+    }
+
+    public String getAlarmName(Context context) {
+        return AlarmUtil.getAlarmName(context);
     }
 
     public Task<String> getToken() {
