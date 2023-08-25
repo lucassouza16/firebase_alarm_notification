@@ -122,18 +122,18 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
 
         switch (method) {
             case "setAlarm":
-                result.success(methods.setAlarm(context, call.arguments()));
+                result.success(methods.setAlarm(call.arguments()));
                 break;
             case "removeAlarm":
-                result.success(methods.removeAlarm(context));
+                result.success(methods.removeAlarm());
                 break;
-            case "getAlarm":
-                result.success(methods.getAlarmName(context));
+            case "actualAlarm":
+                result.success(methods.actualAlarm());
                 break;
-            case "getInitialMessage":
+            case "initialMessage":
                 result.success(initialMessage);
                 break;
-            case "getToken":
+            case "firebaseToken":
                 methods.getToken().addOnCompleteListener(task -> result.success(task.getResult()));
                 break;
             case "createChannel":

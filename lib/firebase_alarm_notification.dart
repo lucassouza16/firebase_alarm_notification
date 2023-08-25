@@ -47,12 +47,12 @@ class FirebaseAlarmNotification {
     return invokeMethohWithDefaultValue<bool>('setAlarm', {'bytes': bytes, 'name': uri}, false);
   }
 
-  Future<String?> getAlarm() async {
+  Future<String?> get actualAlarm async {
     if (!isPlatformCompatible()) {
       return null;
     }
 
-    return invokeMethohWithDefaultValue<String?>('getAlarm', null, null);
+    return invokeMethohWithDefaultValue<String?>('actualAlarm', null, null);
   }
 
   Future<bool> removeAlarm() async {
@@ -63,12 +63,12 @@ class FirebaseAlarmNotification {
     return invokeMethohWithDefaultValue('removeAlarm', null, true);
   }
 
-  Future<String?> getToken() async {
+  Future<String?> get firebaseToken async {
     if (!isPlatformCompatible()) {
       return null;
     }
 
-    return await _methodChannel.invokeMethod<String>('getToken');
+    return await _methodChannel.invokeMethod<String>('firebaseToken');
   }
 
   Future<bool> channelExists(String channelId) async {
@@ -95,12 +95,12 @@ class FirebaseAlarmNotification {
     return invokeMethohWithDefaultValue('createChannel', channel.toJson(), true);
   }
 
-  Future<FirebaseMessage?> getInitialMessage() async {
+  Future<FirebaseMessage?> get initialMessage async {
     if (!isPlatformCompatible()) {
       return null;
     }
 
-    dynamic param = await _methodChannel.invokeMethod<dynamic>('getInitialMessage');
+    dynamic param = await _methodChannel.invokeMethod<dynamic>('initialMessage');
 
     if (param != null) {
       return FirebaseMessage.fromJson(param);

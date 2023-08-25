@@ -4,27 +4,26 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.Constants;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.FirebaseAlarmNotificationPlugin;
 
 public class PreferencesUtil {
-    public static void setString(Context context, String name, String value) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
+    SharedPreferences sharedPreferences;
+    SharedPreferences.Editor editor;
+    public static PreferencesUtil instance = new PreferencesUtil();
+    private PreferencesUtil() {
+        sharedPreferences = FirebaseAlarmNotificationPlugin.getApplicationContext().getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+    }
+    public void setString(String name, String value) {
         editor.putString(name, value);
         editor.apply();
     }
 
-    public static String getString(Context context, String name) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
-
+    public String getString(String name) {
         return sharedPreferences.getString(name, null);
     }
 
-    public static void removeString(Context context, String name) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
+    public void removeString(String name) {
         editor.remove(name);
         editor.apply();
     }
