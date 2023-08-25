@@ -17,7 +17,11 @@ public class FirebaseAlarmNotificationPluginMethods {
         this.context = context;
     }
 
-    public boolean setAlarm(Context context, byte[] bytes, String name) {
+    public boolean setAlarm(Context context, Map<String, Object> params) {
+
+        byte[] bytes =  (byte[]) params.get("bytes");
+        String name = (String) params.get("name");
+
         try {
             AlarmUtil.saveAlarm(context, bytes, name);
 

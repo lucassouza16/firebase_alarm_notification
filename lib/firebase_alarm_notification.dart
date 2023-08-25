@@ -44,13 +44,7 @@ class FirebaseAlarmNotification {
     ByteData fileData = await rootBundle.load(uri);
     List<int> bytes = fileData.buffer.asUint8List();
 
-    return invokeMethohWithDefaultValue<bool>(
-        'setAlarm',
-        {
-          'bytes': bytes,
-          'name': uri,
-        },
-        false);
+    return invokeMethohWithDefaultValue<bool>('setAlarm', {'bytes': bytes, 'name': uri}, false);
   }
 
   Future<String?> getAlarm() async {
