@@ -12,8 +12,8 @@ class FirebaseAlarmNotification {
   }
 
   final _methodChannel = const MethodChannel('firebase_alarm_notification');
-  final List<Function(FirebaseMessage arguments)> _callbackNotificationTap = const [];
-  final List<Function(FirebaseMessage arguments)> _callbackNotification = const [];
+  final List<Function(FirebaseMessage arguments)> _callbackNotificationTap = [];
+  final List<Function(FirebaseMessage arguments)> _callbackNotification = [];
 
   static FirebaseAlarmNotification instance = FirebaseAlarmNotification();
 

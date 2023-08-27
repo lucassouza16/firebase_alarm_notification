@@ -49,7 +49,7 @@ class FirebaseNotification {
   final String? title;
   final String? body;
   final String? channel;
-  final String? alarm;
+  final bool? alarm;
 
   const FirebaseNotification({
     required this.tag,
