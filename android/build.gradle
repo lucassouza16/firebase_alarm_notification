@@ -22,6 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
+    namespace "com.lucassouza.firebase.alarm.firebase_alarm_notification"
     compileSdkVersion 31
 
     compileOptions {
