@@ -115,8 +115,8 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                 tapIntent.putExtra("withAlarm", alarm);
 
                 dismissIntent.putExtras(tapIntent.getExtras());
-                PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
                 @SuppressLint("NotificationTrampoline")
                 NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
