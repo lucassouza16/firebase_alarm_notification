@@ -78,10 +78,6 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         return true;
     }
 
-    public static Context getApplicationContext() {
-        return context;
-    }
-
     @Override
     public void onAttachedToActivity(ActivityPluginBinding binding) {
         Log.d(TAG, "onAttachedToActivity: Updated");
@@ -125,10 +121,10 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
                 result.success(methods.setAlarm(call.arguments()));
                 break;
             case "removeAlarm":
-                result.success(methods.removeAlarm());
+                result.success(methods.removeAlarm(context));
                 break;
             case "actualAlarm":
-                result.success(methods.actualAlarm());
+                result.success(methods.actualAlarm(context));
                 break;
             case "initialMessage":
                 result.success(initialMessage);

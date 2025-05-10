@@ -9,9 +9,9 @@ import com.lucassouza.firebase.alarm.firebase_alarm_notification.FirebaseAlarmNo
 public class PreferencesUtil {
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
-    public static PreferencesUtil instance = new PreferencesUtil();
-    private PreferencesUtil() {
-        sharedPreferences = FirebaseAlarmNotificationPlugin.getApplicationContext().getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
+    private static PreferencesUtil instance;
+    private PreferencesUtil(Context context) {
+        sharedPreferences = context.getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
     public void setString(String name, String value) {
@@ -26,5 +26,13 @@ public class PreferencesUtil {
     public void removeString(String name) {
         editor.remove(name);
         editor.apply();
+    }
+
+    public static PreferencesUtil getInstance(Context context) {
+        if(instance == null) {
+            instance = new PreferencesUtil(context);
+        }
+
+        return instance;
     }
 }

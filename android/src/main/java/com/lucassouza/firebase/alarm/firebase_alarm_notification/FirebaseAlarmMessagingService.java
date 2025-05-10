@@ -81,8 +81,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
             boolean alarm = false;
 
             try {
-                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, new TypeReference<Map<String, Object>>() {
-                });
+                Map<String, Object> notification = new ObjectMapper().readValue(jsonNotification, Map.class);
 
                 title = (String) notification.get("title");
                 body = (String) notification.get("body");

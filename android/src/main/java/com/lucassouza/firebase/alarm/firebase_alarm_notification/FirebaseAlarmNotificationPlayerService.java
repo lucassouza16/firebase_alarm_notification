@@ -20,7 +20,7 @@ public class FirebaseAlarmNotificationPlayerService {
 
     public static void play(Context context) {
 
-        File file = AlarmUtil.getAlarm();
+        File file = AlarmUtil.getAlarm(context);
 
         if(file == null) return;
 
