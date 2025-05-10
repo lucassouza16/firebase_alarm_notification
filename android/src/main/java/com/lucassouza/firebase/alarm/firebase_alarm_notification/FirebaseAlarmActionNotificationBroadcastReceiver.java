@@ -8,11 +8,11 @@ import android.util.Log;
 public class FirebaseAlarmActionNotificationBroadcastReceiver extends BroadcastReceiver {
     String TAG = this.getClass().getSimpleName();
     void handleTapNotification(Context context, Intent intent) {
-        PackageManager pm = context.getPackageManager();
+       /* PackageManager pm = context.getPackageManager();
         Intent newIntent = pm.getLaunchIntentForPackage(context.getPackageName());
         newIntent.putExtras(intent);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.startActivity(newIntent);
+        context.startActivity(newIntent);*/
 
         boolean dismissAlarm = intent.getBooleanExtra("withAlarm", false);
 

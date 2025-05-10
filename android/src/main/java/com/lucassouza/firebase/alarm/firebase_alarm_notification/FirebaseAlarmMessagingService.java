@@ -113,8 +113,20 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
 
                 tapIntent.putExtra("withAlarm", alarm);
 
+                PackageManager pm = context.getPackageManager();
+                Intent newIntent = pm.getLaunchIntentForPackage(context.getPackageName());
+                newIntent.putExtras(tapIntent);
+                newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+                PendingIntent openActivityPendingIntent = PendingIntent.getActivity(
+                        context,
+                        0,
+                        newIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+
                 dismissIntent.putExtras(tapIntent.getExtras());
-                PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+             //   PendingIntent onActionPendingIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), tapIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
                 PendingIntent onActionDismissIntent = PendingIntent.getBroadcast(this.getApplicationContext(), AppUtil.genUniqueID(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
                 @SuppressLint("NotificationTrampoline")
@@ -123,7 +135,7 @@ public class FirebaseAlarmMessagingService extends FirebaseMessagingService {
                         .setContentTitle(title)
                         .setContentText(body)
                         .setAutoCancel(true)
-                        .setContentIntent(onActionPendingIntent)
+                        .setContentIntent(openActivityPendingIntent)
                         .setDeleteIntent(onActionDismissIntent);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
