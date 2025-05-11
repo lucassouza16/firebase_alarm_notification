@@ -45,6 +45,10 @@ public class FirebaseAlarmNotificationPluginMethods {
         return FirebaseMessaging.getInstance().getToken();
     }
 
+    public Task deleteToken() {
+        return FirebaseMessaging.getInstance().deleteToken();
+    }
+
     public boolean createChannel(Map<String, Object> arguments) {
         String id = (String) arguments.get("id");
         String name = (String) arguments.get("name");

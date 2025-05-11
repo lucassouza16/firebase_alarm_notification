@@ -132,6 +132,9 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
             case "firebaseToken":
                 methods.getToken().addOnCompleteListener(task -> result.success(task.getResult()));
                 break;
+            case "deleteToken":
+                methods.deleteToken().addOnCompleteListener(task -> result.success(task.getResult()));
+                break;
             case "createChannel":
                 result.success(methods.createChannel(call.arguments()));
                 break;

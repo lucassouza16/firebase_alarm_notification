@@ -1,4 +1,3 @@
-// import 'package:flutter/foundation.dart';
 import 'package:firebase_alarm_notification/firebase_alarm_notification_models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -69,6 +68,14 @@ class FirebaseAlarmNotification {
     }
 
     return await _methodChannel.invokeMethod<String>('firebaseToken');
+  }
+
+  Future<void> deleteToken() async {
+    if (!isPlatformCompatible()) {
+      return null;
+    }
+
+    return await _methodChannel.invokeMethod<void>('deleteToken');
   }
 
   Future<bool> channelExists(String channelId) async {
