@@ -72,7 +72,7 @@ class FirebaseAlarmNotification {
 
   Future<void> deleteToken() async {
     if (!isPlatformCompatible()) {
-      return null;
+      return;
     }
 
     return await _methodChannel.invokeMethod<void>('deleteToken');
