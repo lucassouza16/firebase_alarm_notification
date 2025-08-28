@@ -102,6 +102,14 @@ class FirebaseAlarmNotification {
     return invokeMethohWithDefaultValue('createChannel', channel.toJson(), true);
   }
 
+  Future<bool> requestPermissions() async {
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return invokeMethohWithDefaultValue('requestPermissions', null, true);
+  }
+
   Future<FirebaseMessage?> get initialMessage async {
     if (!isPlatformCompatible()) {
       return null;

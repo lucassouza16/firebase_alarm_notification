@@ -23,7 +23,7 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.lucassouza.firebase.alarm.firebase_alarm_notification"
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

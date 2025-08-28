@@ -1,16 +1,21 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.Map;
 
@@ -21,6 +26,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.NewIntentListener;
 
 /**
@@ -32,6 +38,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         NewIntentListener,
         FlutterPlugin,
         ActivityAware,
+        PluginRegistry.RequestPermissionsResultListener,
         Application.ActivityLifecycleCallbacks {
     private String TAG = this.getClass().getSimpleName();
     private MethodChannel channel;
@@ -42,6 +49,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     private Map<String, Object> initialMessage;
     private BroadcastReceiver updateReceiver;
     private FirebaseAlarmNotificationPluginMethods methods;
+    private Result resolvePremissionsResult;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -86,6 +94,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         Application application = currentActivity.getApplication();
 
         binding.addOnNewIntentListener(this);
+        binding.addRequestPermissionsResultListener(this);
         application.registerActivityLifecycleCallbacks(this);
 
         onNewIntent(currentActivity.getIntent());
@@ -144,6 +153,19 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
             case "deleteChannel":
                 result.success(methods.deleteChannel(call.arguments()));
                 break;
+            case "requestPermissions":
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(currentActivity, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        result.success(true);
+                    } /*else if (currentActivity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                        resolvePremissionsResult = result;
+                        ActivityCompat.requestPermissions(currentActivity, new String[]{Manifest.permission.POST_NOTIFICATIONS}, Constants.NOTIFICATION_PERMISSION_REQUEST_CODE);
+                    }*/ else {
+                        resolvePremissionsResult = result;
+                        ActivityCompat.requestPermissions(currentActivity, new String[]{Manifest.permission.POST_NOTIFICATIONS}, Constants.NOTIFICATION_PERMISSION_REQUEST_CODE);
+                    }
+                }
+                break;
             default:
                 result.notImplemented();
         }
@@ -156,6 +178,21 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         application.unregisterActivityLifecycleCallbacks(this);
         currentActivity.unregisterReceiver(updateReceiver);
         currentActivity = null;
+    }
+
+    @Override
+    public boolean onRequestPermissionsResult(int i, @NonNull String[] strings, @NonNull int[] grantResults) {
+
+        if(i == Constants.NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if(resolvePremissionsResult != null) {
+                resolvePremissionsResult.success(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                resolvePremissionsResult = null;
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
