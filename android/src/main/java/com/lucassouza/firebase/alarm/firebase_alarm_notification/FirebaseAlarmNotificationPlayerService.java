@@ -1,17 +1,15 @@
 package com.lucassouza.firebase.alarm.firebase_alarm_notification;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
 
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.AlarmUtil;
-
-import java.io.File;
 
 public class FirebaseAlarmNotificationPlayerService {
     private static MediaPlayer mediaPlayer;
@@ -20,9 +18,9 @@ public class FirebaseAlarmNotificationPlayerService {
 
     public static void play(Context context) {
 
-        File file = AlarmUtil.getAlarm(context);
+        AssetFileDescriptor afd = AlarmUtil.getCurrentAsset(context).getAssetFile(context);
 
-        if(file == null) return;
+        if(afd == null) return;
 
         stop();
 
@@ -62,7 +60,7 @@ public class FirebaseAlarmNotificationPlayerService {
 
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
 
-                mediaPlayer.setDataSource(context, Uri.fromFile(file));
+                mediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
                 mediaPlayer.setLooping(true);
             }
 

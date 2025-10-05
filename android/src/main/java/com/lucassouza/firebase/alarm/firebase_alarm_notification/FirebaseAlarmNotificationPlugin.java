@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +23,7 @@ import java.util.Map;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -39,6 +41,7 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         FlutterPlugin,
         ActivityAware,
         PluginRegistry.RequestPermissionsResultListener,
+        EventChannel.StreamHandler,
         Application.ActivityLifecycleCallbacks {
     private String TAG = this.getClass().getSimpleName();
     private MethodChannel channel;
@@ -51,15 +54,29 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     private FirebaseAlarmNotificationPluginMethods methods;
     private Result resolvePremissionsResult;
 
+    private EventChannel playerChannel;
+    private EventChannel.EventSink playerSink;
+
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
         Log.d(TAG, "onAttachToEngine: Updated");
 
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "firebase_alarm_notification");
+        playerChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "firebase_alarm_notification/player");
         channel.setMethodCallHandler(this);
+        playerChannel.setStreamHandler(this);
         binding = flutterPluginBinding;
         context = flutterPluginBinding.getApplicationContext();
         methods = new FirebaseAlarmNotificationPluginMethods(context);
+
+        methods.player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                if(playerSink != null) {
+                    playerSink.success("STOP");
+                }
+            }
+        });
     }
 
     @Override
@@ -126,14 +143,20 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
         String method = call.method;
 
         switch (method) {
+            case "stopAlarm":
+                result.success(methods.stopAlarm());
+                break;
+            case "playAlarm":
+                result.success(methods.playAlarm(call.arguments()));
+                break;
             case "setAlarm":
                 result.success(methods.setAlarm(call.arguments()));
                 break;
-            case "removeAlarm":
-                result.success(methods.removeAlarm(context));
-                break;
             case "actualAlarm":
                 result.success(methods.actualAlarm(context));
+                break;
+            case "allAlarms":
+                result.success(methods.allAlarms());
                 break;
             case "initialMessage":
                 result.success(initialMessage);
@@ -248,5 +271,15 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
 
+    }
+
+    @Override
+    public void onListen(Object o, EventChannel.EventSink eventSink) {
+        playerSink = eventSink;
+    }
+
+    @Override
+    public void onCancel(Object o) {
+       playerSink = null;
     }
 }

@@ -1,4 +1,5 @@
 import 'package:firebase_alarm_notification/firebase_alarm_notification_models.dart';
+import 'package:firebase_alarm_notification/models/alarm.model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
@@ -11,6 +12,7 @@ class FirebaseAlarmNotification {
   }
 
   final _methodChannel = const MethodChannel('firebase_alarm_notification');
+  final EventChannel _eventPlayerChannel = const EventChannel('firebase_alarm_notification/player');
   final List<Function(FirebaseMessage arguments)> _callbackNotificationTap = [];
   final List<Function(FirebaseMessage arguments)> _callbackNotification = [];
 
@@ -35,31 +37,54 @@ class FirebaseAlarmNotification {
     }
   }
 
-  Future<bool> setAlarm(String uri) async {
+  Stream<String> get eventPlayerChannel {
+    return _eventPlayerChannel.receiveBroadcastStream().map((event) => event as String);
+  }
+
+  Future<bool> setAlarm(int id) async {
     if (!isPlatformCompatible()) {
       return false;
     }
 
-    ByteData fileData = await rootBundle.load(uri);
-    List<int> bytes = fileData.buffer.asUint8List();
-
-    return invokeMethohWithDefaultValue<bool>('setAlarm', {'bytes': bytes, 'name': uri}, false);
+    return invokeMethohWithDefaultValue<bool>('setAlarm', id, false);
   }
 
-  Future<String?> get actualAlarm async {
+  Future<AlarmModel?> get actualAlarm async {
     if (!isPlatformCompatible()) {
       return null;
     }
 
-    return invokeMethohWithDefaultValue<String?>('actualAlarm', null, null);
+    Map<Object?, Object?>? map = await invokeMethohWithDefaultValue<Map<Object?, Object?>?>('actualAlarm', null, null);
+
+    if (map == null) return null;
+
+    return AlarmModel.fromJson(Map<String, dynamic>.from(map));
   }
 
-  Future<bool> removeAlarm() async {
+  Future<List<AlarmModel>> allAlarms() async {
+    if (!isPlatformCompatible()) {
+      return [];
+    }
+
+    List<dynamic> list = await invokeMethohWithDefaultValue('allAlarms', null, []);
+
+    return list.map((e) => AlarmModel.fromJson(Map<String, dynamic>.from(e))).toList();
+  }
+
+  Future<bool> playAlarm(int id) async {
     if (!isPlatformCompatible()) {
       return false;
     }
 
-    return invokeMethohWithDefaultValue('removeAlarm', null, true);
+    return invokeMethohWithDefaultValue('playAlarm', id, false);
+  }
+
+  Future<bool> stopAlarm() async {
+    if (!isPlatformCompatible()) {
+      return false;
+    }
+
+    return invokeMethohWithDefaultValue('stopAlarm', null, false);
   }
 
   Future<String?> get firebaseToken async {

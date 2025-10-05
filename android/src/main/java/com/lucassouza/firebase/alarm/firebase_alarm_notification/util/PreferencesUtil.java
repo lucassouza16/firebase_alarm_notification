@@ -14,13 +14,13 @@ public class PreferencesUtil {
         sharedPreferences = context.getSharedPreferences(Constants.ALARM_PREFERENCE_KEY, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
     }
-    public void setString(String name, String value) {
-        editor.putString(name, value);
+    public void setInt(String name, int value) {
+        editor.putInt(name, value);
         editor.apply();
     }
 
-    public String getString(String name) {
-        return sharedPreferences.getString(name, null);
+    public int getInt(String name, int val) {
+        return sharedPreferences.getInt(name, val);
     }
 
     public void removeString(String name) {
