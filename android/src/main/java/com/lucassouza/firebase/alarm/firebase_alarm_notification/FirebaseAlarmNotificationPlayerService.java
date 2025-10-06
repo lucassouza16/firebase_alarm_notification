@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.AlarmUtil;
 
 public class FirebaseAlarmNotificationPlayerService {
@@ -44,7 +45,7 @@ public class FirebaseAlarmNotificationPlayerService {
                 mVibrate.vibrate(pattern, 0);
             }
         } catch (Exception e) {
-
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         try {
@@ -68,6 +69,7 @@ public class FirebaseAlarmNotificationPlayerService {
             mediaPlayer.start();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
     }
 
