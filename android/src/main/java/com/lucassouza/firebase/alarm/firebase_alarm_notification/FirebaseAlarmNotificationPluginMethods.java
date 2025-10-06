@@ -6,7 +6,7 @@ import android.media.MediaPlayer;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.lucassouza.firebase.alarm.firebase_alarm_notification.models.AssetModel;
+import com.lucassouza.firebase.alarm.firebase_alarm_notification.models.AlarmModel;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.AlarmUtil;
 import com.lucassouza.firebase.alarm.firebase_alarm_notification.util.NotificationUtil;
 
@@ -31,11 +31,11 @@ public class FirebaseAlarmNotificationPluginMethods {
         return true;
     }
     public boolean playAlarm(int id) {
-        AssetModel asset = AlarmUtil.getAssetById(id);
+        AlarmModel alarm = AlarmUtil.getAlarmById(id);
 
-        if(asset == null) return false;
+        if(alarm == null) return false;
 
-        AssetFileDescriptor afd = asset.getAssetFile(context);
+        AssetFileDescriptor afd = alarm.getAssetFile(context);
 
         player.stop();
         player.reset();
@@ -51,17 +51,17 @@ public class FirebaseAlarmNotificationPluginMethods {
     }
 
     public boolean setAlarm(int id) {
-        return AlarmUtil.setCurrentAssetId(context, id);
+        return AlarmUtil.setCurrentAlarmId(context, id);
     }
 
     public Map<String, Object> actualAlarm(Context context) {
-        return AlarmUtil.getCurrentAsset(context).toMap();
+        return AlarmUtil.getCurrentAlarm(context).toMap();
     }
 
     public List<Map<String, Object>> allAlarms () {
         List<Map<String, Object>> assetsMap = new ArrayList<>();
 
-        for (AssetModel asset : AlarmUtil.assets){
+        for (AlarmModel asset : AlarmUtil.assets){
             assetsMap.add(asset.toMap());
         }
 
@@ -72,7 +72,7 @@ public class FirebaseAlarmNotificationPluginMethods {
         return FirebaseMessaging.getInstance().getToken();
     }
 
-    public Task deleteToken() {
+    public Task<Void> deleteToken() {
         return FirebaseMessaging.getInstance().deleteToken();
     }
 

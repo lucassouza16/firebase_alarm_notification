@@ -6,12 +6,12 @@ import android.content.res.AssetFileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AssetModel {
+public class AlarmModel {
     private String nome;
     private int id;
     private int asset;
 
-    public AssetModel(String nome, int id, int asset) {
+    public AlarmModel(String nome, int id, int asset) {
         this.nome = nome;
         this.id = id;
         this.asset = asset;

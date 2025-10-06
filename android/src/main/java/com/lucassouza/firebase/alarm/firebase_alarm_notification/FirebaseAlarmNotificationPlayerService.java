@@ -19,7 +19,7 @@ public class FirebaseAlarmNotificationPlayerService {
 
     public static void play(Context context) {
 
-        AssetFileDescriptor afd = AlarmUtil.getCurrentAsset(context).getAssetFile(context);
+        AssetFileDescriptor afd = AlarmUtil.getCurrentAlarm(context).getAssetFile(context);
 
         if(afd == null) return;
 

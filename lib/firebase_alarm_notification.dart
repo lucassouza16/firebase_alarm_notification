@@ -1,5 +1,4 @@
 import 'package:firebase_alarm_notification/firebase_alarm_notification_models.dart';
-import 'package:firebase_alarm_notification/models/alarm.model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;

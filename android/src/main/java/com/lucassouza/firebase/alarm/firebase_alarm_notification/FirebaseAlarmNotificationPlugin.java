@@ -187,6 +187,8 @@ public class FirebaseAlarmNotificationPlugin extends BroadcastReceiver
                         resolvePremissionsResult = result;
                         ActivityCompat.requestPermissions(currentActivity, new String[]{Manifest.permission.POST_NOTIFICATIONS}, Constants.NOTIFICATION_PERMISSION_REQUEST_CODE);
                     }
+                } else {
+                    result.success(true);
                 }
                 break;
             default:
